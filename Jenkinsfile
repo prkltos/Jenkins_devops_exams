@@ -61,22 +61,23 @@ pipeline {
     }
 }
 
-// Définir une méthode de déploiement réutilisable
 def deployToKubernetes(String environment) {
-    KUBECONFIG = credentials("config")
-    sh '''
+    // Supposons que 'credentials("config")' vous donne le chemin correct vers kubeconfig ou son contenu.
+    environment {
+        KUBECONFIG_CONTENT = credentials('config')
+    }
+    sh """
     rm -Rf .kube
     mkdir .kube
-    ls 
-    cat $KUBECONFIG > .kube/config
+    echo "\$KUBECONFIG_CONTENT" > .kube/config
     cp fastapi/values.yaml values.yml
     chmod 600 .kube/config
  
-    sed -i "s+image: movie_service+image: $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
-    sed -i "s+image: cast_service+image: $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
-    sed -i "s+image: nginx+image: $NGINX_IMAGE+g" values.yml
-    sed -i "s+image: postgres+image: $POSTGRES_IMAGE+g" values.yml
+    sed -i "s+image: movie_service+image: \${DOCKER_ID}/\${MOVIE_SERVICE_IMAGE}:\${DOCKER_TAG}+g" values.yml
+    sed -i "s+image: cast_service+image: \${DOCKER_ID}/\${CAST_SERVICE_IMAGE}:\${DOCKER_TAG}+g" values.yml
+    sed -i "s+image: nginx+image: \${NGINX_IMAGE}+g" values.yml
+    sed -i "s+image: postgres+image: \${POSTGRES_IMAGE}+g" values.yml
  
-   helm upgrade --install app fastapi --values=values.yml --namespace prod
-    '''
+    helm upgrade --install app fastapi --values=values.yml --namespace \${environment}
+    """
 }
