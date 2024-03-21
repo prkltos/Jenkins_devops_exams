@@ -74,7 +74,7 @@ def deployToKubernetes(String environment) {
     sed -i "s+image: cast_service+image: $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
     sed -i "s+image: nginx+image: $NGINX_IMAGE+g" values.yml
     sed -i "s+image: postgres+image: $POSTGRES_IMAGE+g" values.yml
-    // Déployer en utilisant Helm
+ 
     helm upgrade --install app-${environment} ./helm_chart --values=values.yml --namespace $environment
     '''
 }
