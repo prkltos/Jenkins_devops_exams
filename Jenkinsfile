@@ -77,6 +77,6 @@ def deployToKubernetes(String environment) {
     sed -i "s+image: nginx+image: $NGINX_IMAGE+g" values.yml
     sed -i "s+image: postgres+image: $POSTGRES_IMAGE+g" values.yml
  
-   helm upgrade --install app fastapi --values=values.yml --namespace prod
+   sudo helm upgrade --install app fastapi --values=values.yml --namespace prod
     '''
 }
