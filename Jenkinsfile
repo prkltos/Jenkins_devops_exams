@@ -67,9 +67,10 @@ def deployToKubernetes(String environment) {
     sh '''
     rm -Rf .kube
     mkdir .kube
-    echo "\$KUBECONFIG_CONTENT" > .kube/config
+    ls
+    cat $KUBECONFIG > .kube/config
     cp fastapi/values.yaml values.yml
-    chmod 600 .kube/config
+    cat values.yml
  
     sed -i "s+image: movie_service+image: $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
     sed -i "s+image: cast_service+image: $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
