@@ -102,6 +102,6 @@ def deployToKubernetes(String environment) {
     cp fastapi/values.yaml values.yml
     sed -i "s+tag: movie-service.*+tag: movie-service:$DOCKER_TAG+g" values.yml
     sed -i "s+tag: cast-service.*+tag: cast-service:$DOCKER_TAG+g" values.yml
-    helm upgrade --install app fastapi --values=values.yml --namespace $environment
+    helm upgrade --install app fastapi --values=values.yml --namespace prod
     '''
 }
