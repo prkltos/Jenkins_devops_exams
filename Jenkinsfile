@@ -67,9 +67,8 @@ def deployToKubernetes(String environment) {
     sh '''
     rm -Rf .kube
     mkdir .kube
-    echo $KUBECONFIG > .kube/config
+    echo
     cp fastapi/values.yaml values.yml
-    cat values.yml
     // Mettre à jour les valeurs en fonction de l'environnement et des tags d'image
     sed -i "s+image: movie_service+image: $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
     sed -i "s+image: cast_service+image: $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
