@@ -1,0 +1,25 @@
+movieService:
+  image: "path_to_your_movie_service_image"
+  tag: "latest"
+  port: 8000
+
+movieDb:
+  image: "postgres:12.1-alpine"
+  user: "movie_db_username"
+  password: "movie_db_password"
+  dbName: "movie_db_dev"
+
+castService:
+  image: "path_to_your_cast_service_image"
+  tag: "latest"
+  port: 8000
+
+castDb:
+  image: "postgres:12.1-alpine"
+  user: "cast_db_username"
+  password: "cast_db_password"
+  dbName: "cast_db_dev"
+
+nginx:
+  image: "nginx:latest"
+  port: 8080
