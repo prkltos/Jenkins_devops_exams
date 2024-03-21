@@ -1,10 +1,9 @@
 pipeline {
-    environment {
-        // Déclaration des variables d'environnement
-        DOCKER_ID = "parakltos"
+    environment { 
+        DOCKER_ID = "fallewi" 
         MOVIE_SERVICE_IMAGE = "movie-service"
         CAST_SERVICE_IMAGE = "cast-service"
-        NGINX_IMAGE = "nginx:latest"
+        NGINX_IMAGE = "nginx"
         POSTGRES_IMAGE = "postgres:12.1-alpine"
         DOCKER_TAG = "v.${BUILD_ID}.0"
     }
@@ -15,7 +14,6 @@ pipeline {
                 script {
                     sh '''
                     docker build -t $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG ./movie-service
-                    docker push $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG
                     '''
                 }
             }
@@ -25,19 +23,50 @@ pipeline {
                 script {
                     sh '''
                     docker build -t $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG ./cast-service
+                    '''
+                }
+            }
+        }
+        stage('Docker Push Movie Service') {
+            environment {
+                DOCKER_PASS = credentials("DOCKER_HUB_PASS")
+            }
+            steps {
+                script {
+                    sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
+                    docker push $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG
+                    '''
+                }
+            }
+        }
+        stage('Docker Push Cast Service') {
+            environment {
+                DOCKER_PASS = credentials("DOCKER_HUB_PASS")
+            }
+            steps {
+                script {
+                    sh '''
+                    docker login -u $DOCKER_ID -p $DOCKER_PASS
                     docker push $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG
                     '''
                 }
             }
         }
-        stage('Deploy to Kubernetes Dev') {
+        stage('Deployment to Dev') {
+            environment {
+                KUBECONFIG = credentials("config")
+            }
             steps {
                 script {
                     deployToKubernetes("dev")
                 }
             }
         }
-        stage('Deploy to Kubernetes Staging') {
+        stage('Deployment to Staging') {
+            environment {
+                KUBECONFIG = credentials("config")
+            }
             steps {
                 script {
                     deployToKubernetes("staging")
@@ -51,7 +80,10 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to Kubernetes Prod') {
+        stage('Deployment to Prod') {
+            environment {
+                KUBECONFIG = credentials("config")
+            }
             steps {
                 script {
                     deployToKubernetes("prod")
@@ -63,20 +95,13 @@ pipeline {
 
 // Définir une méthode de déploiement réutilisable
 def deployToKubernetes(String environment) {
-    KUBECONFIG = credentials("config")
     sh '''
     rm -Rf .kube
     mkdir .kube
-    ls
     cat $KUBECONFIG > .kube/config
     cp fastapi/values.yaml values.yml
-    cat values.yml
- 
-    sed -i "s+image: movie_service+image: $DOCKER_ID/$MOVIE_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
-    sed -i "s+image: cast_service+image: $DOCKER_ID/$CAST_SERVICE_IMAGE:$DOCKER_TAG+g" values.yml
-    sed -i "s+image: nginx+image: $NGINX_IMAGE+g" values.yml
-    sed -i "s+image: postgres+image: $POSTGRES_IMAGE+g" values.yml
- 
-   helm upgrade --install app fastapi --values=values.yml --namespace prod
+    sed -i "s+tag: movie-service.*+tag: movie-service:$DOCKER_TAG+g" values.yml
+    sed -i "s+tag: cast-service.*+tag: cast-service:$DOCKER_TAG+g" values.yml
+    helm upgrade --install app fastapi --values=values.yml --namespace $environment
     '''
 }
