@@ -1,6 +1,6 @@
 pipeline {
     environment { 
-        DOCKER_ID = "fallewi" 
+        DOCKER_ID = "parakltos" 
         MOVIE_SERVICE_IMAGE = "movie-service"
         CAST_SERVICE_IMAGE = "cast-service"
         NGINX_IMAGE = "nginx"
